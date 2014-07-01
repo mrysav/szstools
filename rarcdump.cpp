@@ -4,8 +4,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include <direct.h>
+//#include <direct.h>
 #include <iostream>
+#include <unistd.h>
+
 using namespace std;
 
 typedef char c8;
@@ -131,8 +133,9 @@ FileEntry getFileEntry(int i, const RarcHeader& h, FILE* f)
 void dumpNode(const Node& n, const RarcHeader& h, FILE* f)
 {
   string nodeName = getString(n.filenameOffset + h.stringTableOffset + 0x20, f);
-  _mkdir(nodeName.c_str());
-  _chdir(nodeName.c_str());
+  string mkdir = "mkdir " + nodeName;
+  system(mkdir.c_str());
+  chdir(nodeName.c_str());
 
   for(int i = 0; i < n.numFileEntries; ++i)
   {
@@ -162,7 +165,7 @@ void dumpNode(const Node& n, const RarcHeader& h, FILE* f)
     }
   }
 
-  _chdir("..");
+  chdir("..");
 }
 
 void readFile(FILE* f)
@@ -197,12 +200,13 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
 
   string dirName = argv[1] + string("_dir");
-  _mkdir(dirName.c_str());
-  _chdir(dirName.c_str());
+  string mkdir = "mkdir " + dirName;
+  system(mkdir.c_str());
+  chdir(dirName.c_str());
 
   readFile(f);
 
-  _chdir("..");
+  chdir("..");
   fclose(f);
 
   return EXIT_SUCCESS;

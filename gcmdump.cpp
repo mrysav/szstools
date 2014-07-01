@@ -8,7 +8,8 @@
 #include <string>
 #include <iterator>
 #include <stack>
-#include <direct.h>
+//#include <direct.h>
+#include <unistd.h>
 using namespace std;
 
 typedef unsigned char u8;
@@ -238,8 +239,9 @@ int main(int argc, char* argv[])
   directoryEnd.push(fst.entries.size());
 
   string dirName = argv[1] + string("_dir");
-  _mkdir(dirName.c_str());
-  _chdir(dirName.c_str());
+  string dirName_mk = "mkdir " + dirName;
+  system(dirName_mk.c_str());
+  chdir(dirName.c_str());
 
   for(int i = 1; i < fst.entries.size(); ++i)
   {
@@ -250,15 +252,16 @@ int main(int argc, char* argv[])
     {
       directoryEnd.pop();
       path = path.substr(0, path.rfind('/'));
-      _chdir("..");
+      chdir("..");
     }
 
     if(e.isDirectory)
     {
       directoryEnd.push(e.nextOffset);
 
-      _mkdir(e.name.c_str());
-      _chdir(e.name.c_str());
+      string e_mk = "mkdir " + e.name;
+      system(e_mk.c_str());
+      chdir(e.name.c_str());
 
       path = "/" + e.name;
       int off = fst.entries[i].parentOffset;
