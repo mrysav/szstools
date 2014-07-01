@@ -1,3 +1,13 @@
+thakis GameCube extraction tools
+
+rarcdump, gcmdump and yaz0dec have been modified very slightly to compile and run on OSX 10.9 Mavericks, and possibly Linux as well. 
+All code originally by thakis
+
+Mitchell Rysavy
+July 1st 2014
+
+=== ORIGINAL README ===
+
 You need approx. 3 gb and 10 minutes to extract all files from a gcm...
 
 At first, run
