@@ -1,5 +1,6 @@
-//version 1.0 (20050213)
+//version 1.1 (20210524)
 //by thakis
+//Updated by Michael Hinrichs
 
 #include <cstdio>
 #include <cstdlib>
@@ -89,6 +90,7 @@ Ret decodeYaz0(u8* src, int srcSize, u8* dst, int uncompressedSize)
   return r;
 }
 
+#pragma warning(disable : 4996)
 
 void decodeAll(u8 * src, int srcSize, char* srcName)
 {
@@ -97,11 +99,7 @@ void decodeAll(u8 * src, int srcSize, char* srcName)
   while(readBytes < srcSize)
   {
     //search yaz0 block
-    while(readBytes + 3 < srcSize
-      && (src[readBytes] != 'Y'
-      || src[readBytes + 1] != 'a'
-      || src[readBytes + 2] != 'z'
-      || src[readBytes + 3] != '0'))
+    while(readBytes + 3 < srcSize && (src[readBytes] != 'Y' || src[readBytes + 1] != 'a' || src[readBytes + 2] != 'z' || src[readBytes + 3] != '0'))
       ++readBytes;
 
     if(readBytes + 3 >= srcSize)
@@ -109,8 +107,48 @@ void decodeAll(u8 * src, int srcSize, char* srcName)
 
     readBytes += 4;
 
+    std::string fullname(srcName);
+    string rawname = fullname.substr(0, fullname.find_last_of("."));
+
     char dstName[300];
-    sprintf(dstName, "%s %x.rarc", srcName, readBytes - 4);
+    if (src[readBytes + 13] == 'S' && src[readBytes + 14] == 'A' && src[readBytes + 15] == 'R' && src[readBytes + 16] == 'C')
+      sprintf_s(dstName, "%s.sarc", rawname.c_str());
+    else if (src[readBytes + 13] == 'F' && src[readBytes + 14] == 'R' && src[readBytes + 15] == 'E' && src[readBytes + 16] == 'S')
+      sprintf_s(dstName, "%s.fres", rawname.c_str());
+    else if (src[readBytes + 13] == 'R' && src[readBytes + 14] == 'A' && src[readBytes + 15] == 'R' && src[readBytes + 16] == 'C')
+      sprintf_s(dstName, "%s.rarc", rawname.c_str());
+    else if (src[readBytes + 13] == 'N' && src[readBytes + 14] == 'A' && src[readBytes + 15] == 'R' && src[readBytes + 16] == 'C')//Super Mario 3D Land
+      sprintf_s(dstName, "%s.narc", rawname.c_str());
+    else if (src[readBytes + 13] == 'U' && src[readBytes + 15] == '8' && src[readBytes + 16] == '-')//Mario Kart Wii
+      sprintf_s(dstName, "%s.u8", rawname.c_str());
+    else if (src[readBytes + 13] == 2 && src[readBytes + 14] == 2 && src[readBytes + 15] == 0 && src[readBytes + 16] == 0)//Mario Kart 8 Deluxe
+      sprintf_s(dstName, "%s.kcl", rawname.c_str());
+    else if (src[readBytes + 13] == 'B' && src[readBytes + 14] == 'N' && src[readBytes + 15] == 'T' && src[readBytes + 16] == 'X')//Mario Kart 8 Deluxe
+      sprintf_s(dstName, "%s.bntx", rawname.c_str());
+    else if (src[readBytes + 13] == 'M' && src[readBytes + 14] == 's' && src[readBytes + 15] == 'g' && src[readBytes + 16] == 'S' && src[readBytes + 17] == 't' && src[readBytes + 18] == 'd' && src[readBytes + 19] == 'B' && src[readBytes + 20] == 'n')//Animal Crossing New Horizons
+      sprintf_s(dstName, "%s.msbt", rawname.c_str());
+    else if (src[readBytes + 13] == 'F' && src[readBytes + 14] == 'F' && src[readBytes + 15] == 'N' && src[readBytes + 16] == 'T')//New Super Mario Bros U
+      sprintf_s(dstName, "%s.ffnt", rawname.c_str());
+    else if (src[readBytes + 13] == 'B' && src[readBytes + 14] == 'R' && src[readBytes + 15] == 'E' && src[readBytes + 16] == 'S')//Mario Kart Wii
+      sprintf_s(dstName, "%s.bres", rawname.c_str());
+    else if (src[readBytes + 13] == 'A' && src[readBytes + 14] == 'A' && src[readBytes + 15] == '_' && src[readBytes + 16] == '<' && src[readBytes + 17] == 'b' && src[readBytes + 18] == 's' && src[readBytes + 19] == 't' && src[readBytes + 20] == ' ')//Super Mario Galaxy 1 & 2
+      sprintf_s(dstName, "%s.baa", rawname.c_str());
+    //else if (src[readBytes + 13] == 'C' && src[readBytes + 14] == 'R' && src[readBytes + 15] == 'A' && src[readBytes + 16] == 'R')//in Super Mario All Stars, Super Mario Galaxy's RARC files are in little endian. Keep this commented until it can be reversed
+      //sprintf_s(dstName, "%s.crar", rawname.c_str(), readBytes - 4);
+    //else if (src[readBytes + 13] == '<' && src[readBytes + 14] == '_' && src[readBytes + 15] == 'A' && src[readBytes + 16] == 'A' && src[readBytes + 17] == ' ' && src[readBytes + 18] == 't' && src[readBytes + 19] == 's' && src[readBytes + 20] == 'b')//in Super Mario All Stars, Super Mario Galaxy's BAA files are in little endian. Keep this commented until it can be reversed
+      //sprintf_s(dstName, "%s.baa", rawname.c_str(), readBytes - 8);
+    else if (fullname.find(".szs") == std::string::npos)
+    {
+        printf("no .szs extention detected");
+        std::string newOldFile(srcName);
+        strcat(srcName, ".szs");
+        rename(newOldFile.c_str(), srcName);
+        sprintf_s(dstName, "%s", fullname.c_str());
+    }
+    else
+    {
+      sprintf_s(dstName, "%s", rawname.c_str());
+    }
     FILE* DataFile;
     if((DataFile=fopen(dstName,"wb"))==NULL)
       exit(-1);
