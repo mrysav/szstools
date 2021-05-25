@@ -139,7 +139,6 @@ void decodeAll(u8 * src, int srcSize, char* srcName)
       //sprintf_s(dstName, "%s.baa", rawname.c_str(), readBytes - 8);
     else if (fullname.find(".szs") == std::string::npos)
     {
-        printf("no .szs extention detected");
         std::string newOldFile(srcName);
         strcat(srcName, ".szs");
         rename(newOldFile.c_str(), srcName);
